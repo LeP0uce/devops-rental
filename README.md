@@ -28,3 +28,16 @@ python scripts/course.py --help
 | `checkpoint/00-starter` | Point de départ du TP 01 |
 | `tp/01-ci` → `checkpoint/01-ci` | CI observable et bloquante |
 | `tp/02-supply-chain` → `checkpoint/02-supply-chain` | Preuves de la chaîne logicielle |
+
+## Contrôles
+
+| Workflow | Contrôles (noms des checks requis) |
+|---|---|
+| `java.yml` | `Java tests`, `Java quality`, `Java Docker image`, `Java supply chain` (main) |
+| `python.yml` | `Python tests`, `Python quality`, `Python Docker image`, `Python supply chain` (main) |
+| `secret-detection.yml` | `Secret detection` |
+| `dependency-review.yml` | `Dependency review` (PR) |
+| `policy.yml` | `Supply-chain policy` |
+
+Comptes rendus : [`docs/tp01-pull-request.md`](docs/tp01-pull-request.md),
+[`docs/tp02-pull-request.md`](docs/tp02-pull-request.md).
