@@ -34,8 +34,8 @@ class CarRepositoryTest {
     @Test
     void toJsonEscapesSpecialCharacters() {
         Car car = new Car("x\"1", "Br\\and", "M", "standard", true);
-        assertEquals(
-                "{\"id\":\"x\\\"1\",\"brand\":\"Br\\\\and\",\"model\":\"M\",\"category\":\"standard\",\"available\":true}",
-                car.toJson());
+        String expected = "{\"id\":\"x\\\"1\",\"brand\":\"Br\\\\and\","
+                + "\"model\":\"M\",\"category\":\"standard\",\"available\":true}";
+        assertEquals(expected, car.toJson());
     }
 }

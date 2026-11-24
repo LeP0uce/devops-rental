@@ -1,6 +1,7 @@
 plugins {
     java
     application
+    checkstyle
 }
 
 group = "fr.efrei.rental"
@@ -25,6 +26,21 @@ java {
 tasks.withType<JavaCompile>().configureEach {
     options.release = 21
     options.encoding = "UTF-8"
+}
+
+checkstyle {
+    toolVersion = "14.4.0"
+    configFile = file("config/checkstyle/checkstyle.xml")
+    // Toute violation fait échouer le build : pas de seuil toléré.
+    maxWarnings = 0
+    isIgnoreFailures = false
+}
+
+tasks.withType<Checkstyle>().configureEach {
+    reports {
+        xml.required = true
+        html.required = true
+    }
 }
 
 application {
