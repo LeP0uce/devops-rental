@@ -141,17 +141,31 @@ cosign verify \
 gh attestation verify oci://ghcr.io/<owner>/<repo>/pricing-service@sha256:<digest> --repo <owner>/<repo>
 ```
 
-## §8 — Lecture des preuves (⏱ à relever après le premier run sur `main`)
+## §8 — Lecture des preuves
 
-| Preuve | Valeur | Où la trouver |
+Exécutions de référence sur `main`, commit `8c577a1` :
+[Java service](https://github.com/LeP0uce/devops-rental/actions/runs/45404437071) ·
+[Python service](https://github.com/LeP0uce/devops-rental/actions/runs/45404442985).
+
+| Preuve | `car-rental-service` | `pricing-service` |
 |---|---|---|
-| Digest vérifié | `sha256:…` | sortie `digest` du job image, log « Verify Cosign signature » |
-| Identité du certificat Cosign | `https://github.com/<owner>/<repo>/.github/workflows/java.yml@refs/heads/main` | `cosign-verify.json` → `optional.Subject` ; issuer `https://token.actions.githubusercontent.com` |
-| Dépôt dans la provenance | `https://github.com/<owner>/<repo>` | log « Verify provenance attestation » (`repo=`) |
-| Commit dans la provenance | `<sha du commit de main>` | idem (`commit=`), doit égaler `github.sha` |
-| Composant SBOM n° 1 (système) | `libc6 …` | `pricing-service.spdx.json` |
-| Composant SBOM n° 2 (applicatif) | `fastapi 0.165.0` | idem |
-| Rapport Trivy | lien vers l'artefact `pricing-service-supply-chain-evidence` | onglet *Summary* de l'exécution |
+| Digest vérifié | `sha256:facac1b5498f317943d8891fcb2b50e6a468a1eebeb448427b307468598daafe` | `sha256:7543d41a6f898d5e0534800dbce3e358787393b38a802b46b402efe28ad3ae35` |
+| Identité du certificat Cosign | `https://github.com/LeP0uce/devops-rental/.github/workflows/java.yml@refs/heads/main` | `https://github.com/LeP0uce/devops-rental/.github/workflows/python.yml@refs/heads/main` |
+| Émetteur OIDC | `https://token.actions.githubusercontent.com` | idem |
+| Dépôt (provenance) | `https://github.com/LeP0uce/devops-rental` | idem |
+| Commit (provenance) | `8c577a169dd59285e0ff596a2193563f54af5942` = `github.sha` du run | idem |
+| Ref (provenance) | `refs/heads/main` | idem |
+| SBOM — paquets | 140 | 110 |
+| SBOM — paquet système | `libc6 2.39-0ubuntu8.12`, `openssl 3.0.13-0ubuntu3.16` (Ubuntu 24.04) | `libc6 2.41-12+deb13u5`, `openssl 3.5.9-1~deb13u1` (Debian 13) |
+| SBOM — composant applicatif | `car-rental-service` (jar de l'application) | `fastapi 0.165.0`, `uvicorn 0.54.0` |
+| Rapport Trivy (HIGH/CRITICAL corrigeables) | 0 vulnérabilité — artefact `car-rental-service-supply-chain-evidence` | 0 vulnérabilité — artefact `pricing-service-supply-chain-evidence` |
+
+Le commit de la provenance est bien celui qui a déclenché le run, et le digest
+signé, attesté, vérifié et scanné est le même à chaque étape.
+
+Remarque : ces exécutions ont été lancées par `workflow_dispatch` sur `main`.
+Les `push` du dépôt fraîchement créé n'ont déclenché aucun run, d'où
+l'autorisation de la republication manuelle depuis `main` (jamais depuis une PR).
 
 ## Limites connues
 
