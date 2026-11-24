@@ -1,5 +1,10 @@
 # Service Rental — dépôt du cours DevOps
 
+[![Java service](https://github.com/LeP0uce/devops-rental/actions/workflows/java.yml/badge.svg?branch=main)](https://github.com/LeP0uce/devops-rental/actions/workflows/java.yml)
+[![Python service](https://github.com/LeP0uce/devops-rental/actions/workflows/python.yml/badge.svg?branch=main)](https://github.com/LeP0uce/devops-rental/actions/workflows/python.yml)
+[![Secret detection](https://github.com/LeP0uce/devops-rental/actions/workflows/secret-detection.yml/badge.svg?branch=main)](https://github.com/LeP0uce/devops-rental/actions/workflows/secret-detection.yml)
+[![Supply-chain policy](https://github.com/LeP0uce/devops-rental/actions/workflows/policy.yml/badge.svg?branch=main)](https://github.com/LeP0uce/devops-rental/actions/workflows/policy.yml)
+
 Deux services conteneurisés :
 
 | Service | Langage | Port | Endpoints |
