@@ -1,5 +1,7 @@
 """API HTTP du service de tarification."""
+
 from fastapi import FastAPI, HTTPException, Query
+
 from app.pricing import DAILY_RATES, PricingError, quote
 
 app = FastAPI(title="pricing-service")
