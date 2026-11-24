@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -21,6 +22,7 @@ ROOT = Path(__file__).resolve().parent.parent
 JAVA_DIR = ROOT / "apps" / "car-rental-service"
 PYTHON_DIR = ROOT / "apps" / "pricing-service"
 COMPOSE_FILE = ROOT / "compose.yaml"
+WORKFLOW_DIR = ROOT / ".github"
 
 CAR_RENTAL_URL = os.environ.get("CAR_RENTAL_URL", "http://localhost:8080")
 PRICING_URL = os.environ.get("PRICING_URL", "http://localhost:8000")
@@ -90,14 +92,79 @@ def lint() -> None:
     lint_python()
 
 
-def verify() -> None:
-    """Portes locales : tests puis qualité. S'arrête au premier échec.
+# --- politique de chaîne logicielle ------------------------------------------
 
-    Ne construit pas les images, ne lance pas Gitleaks et ne vérifie pas la
-    protection de branche : ces responsabilités restent dans GitHub Actions.
+USES_RE = re.compile(r"""^\s*(?:-\s*)?uses:\s*["']?([^"'\s#]+)""")
+FULL_SHA_RE = re.compile(r"@[0-9a-f]{40}$")
+DIGEST_RE = re.compile(r"@sha256:[0-9a-f]{64}$")
+FROM_RE = re.compile(r"^\s*FROM\s+(?:--\S+\s+)*(\S+)(?:\s+AS\s+(\S+))?", re.IGNORECASE)
+IGNORED_DIRS = {".git", ".venv", "build", ".gradle", "node_modules"}
+
+
+def iter_files(base: Path, predicate) -> list[Path]:
+    found = []
+    for path in base.rglob("*"):
+        if path.is_file() and not IGNORED_DIRS.intersection(path.relative_to(ROOT).parts) and predicate(path):
+            found.append(path)
+    return sorted(found)
+
+
+def check_uses(reference: str) -> str | None:
+    """Retourne un message d'erreur si la référence d'action n'est pas immuable."""
+    if reference.startswith("./"):
+        return None  # action locale : versionnée avec le dépôt
+    if reference.startswith("docker://"):
+        return None if DIGEST_RE.search(reference) else "image docker:// sans digest sha256"
+    if "@" not in reference:
+        return "action distante sans version"
+    return None if FULL_SHA_RE.search(reference) else "action distante sans SHA complet (40 caractères)"
+
+
+def check_from(image: str, stages: set[str]) -> str | None:
+    """Retourne un message d'erreur si l'image de base n'est pas épinglée par digest."""
+    if image.lower() == "scratch" or image in stages:
+        return None  # pas de registre ou étape précédente du même Dockerfile
+    return None if DIGEST_RE.search(image) else "FROM sans digest sha256"
+
+
+def supply_chain_policy() -> None:
+    violations: list[str] = []
+    workflows = iter_files(WORKFLOW_DIR, lambda p: p.suffix in {".yml", ".yaml"})
+    for path in workflows:
+        for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+            match = USES_RE.match(line)
+            if match and (error := check_uses(match.group(1))):
+                violations.append(f"{path.relative_to(ROOT)}:{number}: {error} : {match.group(1)}")
+    dockerfiles = iter_files(ROOT, lambda p: p.name == "Dockerfile" or p.name.endswith(".Dockerfile"))
+    for path in dockerfiles:
+        stages: set[str] = set()
+        for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+            match = FROM_RE.match(line)
+            if not match:
+                continue
+            image, alias = match.group(1), match.group(2)
+            if error := check_from(image, stages):
+                violations.append(f"{path.relative_to(ROOT)}:{number}: {error} : {image}")
+            if alias:
+                stages.add(alias)
+    print(f"{len(workflows)} fichier(s) YAML sous .github, {len(dockerfiles)} Dockerfile(s) analysés")
+    for violation in violations:
+        print(f"  ✗ {violation}")
+    if violations:
+        raise CommandFailed(f"{len(violations)} référence(s) mutable(s)")
+    print("ok  toutes les références sont immuables")
+
+
+def verify() -> None:
+    """Portes locales : tests, qualité puis politique de références.
+
+    S'arrête au premier échec. Ne construit pas les images, ne lance pas
+    Gitleaks et ne vérifie pas la protection de branche : ces responsabilités
+    restent dans GitHub Actions.
     """
     test()
     lint()
+    supply_chain_policy()
 
 
 # --- docker compose ----------------------------------------------------------
@@ -154,7 +221,11 @@ COMMANDS = {
     "lint-java": (lint_java, "Exécute Checkstyle sur le service Java"),
     "lint-python": (lint_python, "Exécute Ruff (lint et formatage) sur le service Python"),
     "lint": (lint, "Lance les contrôles qualité Java, puis Python"),
-    "verify": (verify, "Reproduit les portes locales : tests puis qualité"),
+    "supply-chain-policy": (
+        supply_chain_policy,
+        "Échoue si une action n'est pas épinglée par SHA ou un FROM sans digest",
+    ),
+    "verify": (verify, "Reproduit les portes locales : tests, qualité, politique"),
     "compose-up": (compose_up, "Construit et démarre l'environnement Docker Compose"),
     "compose-down": (compose_down, "Arrête l'environnement Docker Compose"),
     "smoke": (smoke, "Vérifie les endpoints des deux services et une cotation attendue"),
