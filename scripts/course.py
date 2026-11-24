@@ -73,6 +73,33 @@ def test() -> None:
     test_python()
 
 
+# --- qualité -----------------------------------------------------------------
+
+
+def lint_java() -> None:
+    run([gradlew(), "checkstyleMain", "checkstyleTest"], cwd=JAVA_DIR)
+
+
+def lint_python() -> None:
+    run([sys.executable, "-m", "ruff", "check", "app", "tests"], cwd=PYTHON_DIR)
+    run([sys.executable, "-m", "ruff", "format", "--check", "app", "tests"], cwd=PYTHON_DIR)
+
+
+def lint() -> None:
+    lint_java()
+    lint_python()
+
+
+def verify() -> None:
+    """Portes locales : tests puis qualité. S'arrête au premier échec.
+
+    Ne construit pas les images, ne lance pas Gitleaks et ne vérifie pas la
+    protection de branche : ces responsabilités restent dans GitHub Actions.
+    """
+    test()
+    lint()
+
+
 # --- docker compose ----------------------------------------------------------
 
 
@@ -124,6 +151,10 @@ COMMANDS = {
     "test-java": (test_java, "Exécute gradlew clean test dans le service Java"),
     "test-python": (test_python, "Exécute Pytest avec l'interpréteur Python courant"),
     "test": (test, "Lance les tests Java, puis les tests Python"),
+    "lint-java": (lint_java, "Exécute Checkstyle sur le service Java"),
+    "lint-python": (lint_python, "Exécute Ruff (lint et formatage) sur le service Python"),
+    "lint": (lint, "Lance les contrôles qualité Java, puis Python"),
+    "verify": (verify, "Reproduit les portes locales : tests puis qualité"),
     "compose-up": (compose_up, "Construit et démarre l'environnement Docker Compose"),
     "compose-down": (compose_down, "Arrête l'environnement Docker Compose"),
     "smoke": (smoke, "Vérifie les endpoints des deux services et une cotation attendue"),
