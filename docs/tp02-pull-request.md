@@ -143,17 +143,17 @@ gh attestation verify oci://ghcr.io/<owner>/<repo>/pricing-service@sha256:<diges
 
 ## §8 — Lecture des preuves
 
-Exécutions de référence sur `main`, commit `8c577a1` :
-[Java service](https://github.com/LeP0uce/devops-rental/actions/runs/45404437071) ·
-[Python service](https://github.com/LeP0uce/devops-rental/actions/runs/45404442985).
+Exécutions de référence sur `main`, commit `713bd9b` :
+[Java service](https://github.com/LeP0uce/devops-rental/actions/runs/45408331376) ·
+[Python service](https://github.com/LeP0uce/devops-rental/actions/runs/45408338281).
 
 | Preuve | `car-rental-service` | `pricing-service` |
 |---|---|---|
-| Digest vérifié | `sha256:facac1b5498f317943d8891fcb2b50e6a468a1eebeb448427b307468598daafe` | `sha256:7543d41a6f898d5e0534800dbce3e358787393b38a802b46b402efe28ad3ae35` |
+| Digest vérifié | `sha256:b8375ddbc28edd6733fce9259b3e5d4dbc9331d4df1723e538711a23bb2880f3` | `sha256:e6c5549f0a960372d80f3af900428e411c050f8eaaa5b365cc59229d2152f591` |
 | Identité du certificat Cosign | `https://github.com/LeP0uce/devops-rental/.github/workflows/java.yml@refs/heads/main` | `https://github.com/LeP0uce/devops-rental/.github/workflows/python.yml@refs/heads/main` |
 | Émetteur OIDC | `https://token.actions.githubusercontent.com` | idem |
 | Dépôt (provenance) | `https://github.com/LeP0uce/devops-rental` | idem |
-| Commit (provenance) | `8c577a169dd59285e0ff596a2193563f54af5942` = `github.sha` du run | idem |
+| Commit (provenance) | `713bd9b0b3b697fdae21a1854855b42880f24b99` = `github.sha` du run | idem |
 | Ref (provenance) | `refs/heads/main` | idem |
 | SBOM — paquets | 140 | 110 |
 | SBOM — paquet système | `libc6 2.39-0ubuntu8.12`, `openssl 3.0.13-0ubuntu3.16` (Ubuntu 24.04) | `libc6 2.41-12+deb13u5`, `openssl 3.5.9-1~deb13u1` (Debian 13) |
