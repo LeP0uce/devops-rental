@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+apps/pricing-service/reports/
+
+# Java / Gradle
+.gradle/
+build/
+*.class
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# Rapports locaux
+*.sarif
+*.spdx.json
