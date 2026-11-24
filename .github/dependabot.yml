@@ -1,0 +1,36 @@
+# Les références sont épinglées par SHA / digest : Dependabot propose les
+# montées de version dans des PR ordinaires, soumises aux mêmes contrôles requis.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: "ci(deps)"
+
+  - package-ecosystem: docker
+    directories:
+      - /apps/car-rental-service
+      - /apps/pricing-service
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "build(deps)"
+
+  - package-ecosystem: pip
+    directory: /apps/pricing-service
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "build(deps)"
+
+  - package-ecosystem: gradle
+    directory: /apps/car-rental-service
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "build(deps)"
